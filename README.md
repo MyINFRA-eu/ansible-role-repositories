@@ -66,10 +66,116 @@ Run this role before the packages role, so it can benefit from these updated rep
 
 Available variables are listed below, along with default values (see `defaults/main.yml`):
 
+### repositories
+
+The dictonary list with all the info.
+
+#### name (required)
+
+The name of the repository.
+
+##### repo (required)
+
+The URI/URL of the repository location.
+
+##### type (optional)
+
+The type of the repository, by default this is "deb"
+
+##### distro (optional)
+
+The distribution of the system/repository, by default this is collect from ansible facts but can be overridden for some repositories like caddy that use "any-version".
+
+##### components (optional)
+
+The components of the system/repository, by default this is "main"
+
+> This can be a array list of components
+
+##### enabled (optional)
+
+If this repository is enabled or not, by default this is true.
+
+>
+
+##### gpg (required)
+
+The location of the gpg files to sign the repository with.
+
+##### state (optional)
+
+The state of the repository, by default this is "present"
+
+
+### Full example
+
+```yml
+repositories:
+  caddy-stable:
+    gpg: 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key'
+    type: deb
+    distro: any-version
+    components:
+      - main
+    repo: 'https://dl.cloudsmith.io/public/caddy/stable/deb/debian'
+    state: present
+  caddy-testing:
+    gpg: 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key'
+    type: deb
+    distro: any-version
+    components:
+      - main
+    repo: 'https://dl.cloudsmith.io/public/caddy/testing/deb/debian'
+    state: present
+    enabled: false
+  mariadb-11.8:
+    gpg: 'https://mariadb.org/mariadb_release_signing_key.pgp'
+    repo: 'https://mirror.realcompute.io/mariadb/repo/11.8/debian'
+    state: present
+  mariadb-12.0:
+    gpg: 'https://mariadb.org/mariadb_release_signing_key.pgp'
+    repo: 'https://mirror.serverion.com/mariadb/repo/12.0/debian'
+    state: present
+    enabled: false
 ```
-var1: true
-var2: "string"
-var3: []
+
+```json
+{
+  "repositories": {
+    "caddy-stable": {
+      "gpg": "https://dl.cloudsmith.io/public/caddy/stable/gpg.key",
+      "type": "deb",
+      "distro": "any-version",
+      "components": [
+        "main"
+      ],
+      "repo": "https://dl.cloudsmith.io/public/caddy/stable/deb/debian",
+      "state": "present"
+    },
+    "caddy-testing": {
+      "gpg": "https://dl.cloudsmith.io/public/caddy/stable/gpg.key",
+      "type": "deb",
+      "distro": "any-version",
+      "components": [
+        "main"
+      ],
+      "repo": "https://dl.cloudsmith.io/public/caddy/testing/deb/debian",
+      "state": "present",
+      "enabled": false
+    },
+    "mariadb-11.8": {
+      "gpg": "https://mariadb.org/mariadb_release_signing_key.pgp",
+      "repo": "https://mirror.realcompute.io/mariadb/repo/11.8/debian",
+      "state": "present"
+    },
+    "mariadb-12.0": {
+      "gpg": "https://mariadb.org/mariadb_release_signing_key.pgp",
+      "repo": "https://mirror.serverion.com/mariadb/repo/12.0/debian",
+      "state": "present",
+      "enabled": false
+    }
+  }
+}
 ```
 
 

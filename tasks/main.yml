@@ -23,3 +23,54 @@
       - "Copyright : (c) 2025 (and beyond) - Dennis de Houx, All In One, One For The code"
       - "Author    : Dennis de Houx <dennis@dehoux.be>"
       - "License   : https://creativecommons.org/licenses/by-nc-nd/4.0/deed.en CC BY-NC-ND 4.0"
+
+- name: "REPOSITORIES > Convert repositories dictionary to list"
+  ansible.builtin.set_fact:
+    repos_list: "{{ repos_list | default([]) + [{'name': repo_name} | combine(repo_data)] }}"
+  #    repos_list: "{{ repos_list | default([]) + [{'name': repo_name} | {'codename': ansible_facts['ansible_distribution_release']} | combine(repo_data)] }}"
+  loop: "{{ repositories | dict2items }}"
+  vars:
+    repo_name: "{{ item.key }}"
+    repo_data: "{{ item.value }}"
+  when: >
+    repositories is defined and repositories | length > 0
+
+- name: "REPOSITORIES > Install required packages"
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: "{{ packages.state | default('latest') }}"
+    update_cache: "{{ packages.cache.update | default(true) }}"
+    cache_valid_time: "{{ packages.cache.time | default(3600) }}"
+    install_recommends: "{{ packages.recommends | default(false) }}"
+  register: repositories_packages
+  become: true
+  loop: "{{ repositories_required_packages_list | default([]) }}"
+  when:
+    - ansible_facts['os_family'] == "Debian"
+    - repos_list is defined and repos_list | length > 0
+    - repositories_required_packages_list is defined and repositories_required_packages_list | length > 0
+  tags:
+    - repositories_packages
+
+- name: "REPOSITORIES > Install or update extra repositories"
+  ansible.builtin.deb822_repository:
+    name: "{{ item.name }}"
+    uris: "{{ item.repo }}"
+    types: "{{ item.type | default('deb') }}"
+    suites: "{{ item.distro | default(ansible_distribution_release) }}"
+    components: "{{ item.components | default('main') }}"
+    enabled: "{{ item.enabled | default('true') }}"
+    signed_by: "{{ item.gpg | default('/etc/apt/trusted.gpg.d/') }}"
+    state: "{{ item.state | default('present') }}"
+    mode: 0644
+    check_date: true
+    check_valid_until: true
+  register: repositories_install
+  become: true
+  loop: "{{ repos_list | default([]) }}"
+  when:
+    - ansible_facts['os_family'] == "Debian"
+    - repos_list is defined and repos_list | length > 0
+    - item.repo is defined and item.repo | length > 0
+  tags:
+    - repositories_install_repos

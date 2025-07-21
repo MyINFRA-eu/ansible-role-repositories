@@ -19,3 +19,11 @@
 myinfra:
   repositories:
     version: "2025.07.001"
+
+### Required packages
+repositories_required_packages_list:
+  - "gpg"
+  - "debian-keyring"
+  - "debian-archive-keyring"
+  - "apt-transport-https"
+  - "curl"
